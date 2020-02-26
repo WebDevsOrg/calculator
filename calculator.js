@@ -1,13 +1,18 @@
+/* eslint-disable linebreak-style */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable brace-style */
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-console */
 /* eslint-disable no-use-before-define */
 
-function parseExpr(expr) {
+/**
+ * Parses an infix algebraic expression and returns it's value
+ * @param expr : expression to be evaluated i.e. 3+4*5-2
+ */
+exports.parseExpr = (expr) => {
   // minus in the begining of expression fails i.e. -2 + 3 gives 5 instead of 1
-  if (expr === "") {
-    console.error("Emtpy expression. Please provide valid expression");
+  if (!isValid(expr)) {
+    console.error("Invalid expression. Please provide valid expression i.e 3 + 2");
     return expr;
   }
   const postfixExprArray = convertToRpn(expr);
@@ -63,6 +68,10 @@ function convertToRpn(expr) {
   return outQueue;
 }
 
+/**
+ * evaluate post fix expressions to value
+ * @param postfixExprArray
+ */
 function evaluateExpr(postfixExprArray) {
   const operandStack = [];
   postfixExprArray.forEach((element) => {
@@ -75,18 +84,33 @@ function evaluateExpr(postfixExprArray) {
         return operandStack.toString();
       }
       switch (element) {
-        case "*":
-          operandStack.push(Number(operandStack.pop()) * Number(operandStack.pop()));
+        case "*": {
+          const second = operandStack.pop();
+          const first = operandStack.pop();
+          operandStack.push(Number(first) * Number(second));
           break;
+        }
         case "/":
-          operandStack.push(Number(operandStack.pop()) / Number(operandStack.pop()));
+        {
+          const second = operandStack.pop();
+          const first = operandStack.pop();
+          operandStack.push(Number(first) / Number(second));
           break;
+        }
         case "+":
-          operandStack.push(Number(operandStack.pop()) + Number(operandStack.pop()));
+        {
+          const second = operandStack.pop();
+          const first = operandStack.pop();
+          operandStack.push(Number(first) + Number(second));
           break;
+        }
         case "-":
-          operandStack.push(Number(operandStack.pop()) - Number(operandStack.pop()));
+        {
+          const second = operandStack.pop();
+          const first = operandStack.pop();
+          operandStack.push(Number(first) - Number(second));
           break;
+        }
         default:
           console.error(`operation not supported: ${element}`);
       }
@@ -100,5 +124,9 @@ function isOperand(char) {
 }
 
 function isOperator(char) {
-  return /\*|\/|\+|-/.test(char);
+  return /[\*\/\+\-\(]/.test(char);
+}
+
+function isValid(expr) {
+  return /([0-9][\*\/\+\-\(])+/.test(expr);
 }

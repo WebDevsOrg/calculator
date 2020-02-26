@@ -4,7 +4,7 @@
   "description": "calculator is vanilla javascript based application for learning purpose. it has 2 modes Standard and Programmers mode. Ideas are taken from microsoft calculator app on windows 10. Not all the features are replecated only selected ones.",
   "main": "calculator.js",
   "directories": {
-    "test": "test"
+    "test": "mocha"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,6 +22,8 @@
   "devDependencies": {
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.20.1"
-  }
+    "eslint-plugin-import": "^2.20.1",
+    "mocha": "^7.1.0"
+  },
+  "dependencies": {}
 }
