@@ -12,16 +12,17 @@
 exports.parseExpr = (expr) => {
   // minus in the begining of expression fails i.e. -2 + 3 gives 5 instead of 1
   if (!isValid(expr)) {
-    console.error("Invalid expression. Please provide valid expression i.e 3 + 2");
+    console.error(`Invalid expression ${expr}. Please provide valid expression.`);
     return expr;
   }
-  const postfixExprArray = convertToRpn(expr);
+  const postfixExprArray = convertToPostFix(expr);
   const result = evaluateExpr(postfixExprArray);
-  console.log(`RPN expression : ${postfixExprArray} evaluates to ${result}`);
+  console.log(`Expression \"${expr}\" evaluates to \"${postfixExprArray}\"`);
+  console.log(`PostFix Expression \"${postfixExprArray}\" evaluates to ${result}`);
   return result;
-}
+};
 
-function convertToRpn(expr) {
+function convertToPostFix(expr) {
   const opPrecedence = {
     "*": 3, "/": 3, "+": 2, "-": 2, "(": 1,
   };
@@ -120,13 +121,13 @@ function evaluateExpr(postfixExprArray) {
 }
 
 function isOperand(char) {
-  return /[0-9]+/.test(char);
+  return /\d+/.test(char);
 }
 
 function isOperator(char) {
-  return /[\*\/\+\-\(]/.test(char);
+  return /[\*\/\+\-\(]?/.test(char);
 }
 
 function isValid(expr) {
-  return /([0-9][\*\/\+\-\(])+/.test(expr);
+  return /(^\d+|^\d+[\*\/\+\-\(])+/.test(expr);
 }
