@@ -10,14 +10,22 @@
  * @param expr : expression to be evaluated i.e. 3+4*5-2
  */
 exports.parseExpr = (expr) => {
-  // minus in the begining of expression fails i.e. -2 + 3 gives 5 instead of 1
-  if (!isValid(expr)) {
-    console.error(`Invalid expression ${expr}. Please provide valid expression.`);
+  if (expr === "") {
+    console.error("Expression cannot be empty");
     return expr;
   }
-  const postfixExprArray = convertToPostFix(expr);
+
+  // remove white spaces
+  const newExpr = expr.replace(/(\s)+/g, "");
+
+  // minus in the begining of expression fails i.e. -2 + 3 gives 5 instead of 1
+  if (!isValid(newExpr)) {
+    console.log(`Invalid expression ${newExpr}. Please provide valid expression.`);
+    return expr;
+  }
+  const postfixExprArray = convertToPostFix(newExpr);
   const result = evaluateExpr(postfixExprArray);
-  console.log(`Expression \"${expr}\" evaluates to \"${postfixExprArray}\"`);
+  console.log(`Expression \"${newExpr}\" evaluates to \"${postfixExprArray}\"`);
   console.log(`PostFix Expression \"${postfixExprArray}\" evaluates to ${result}`);
   return result;
 };
@@ -81,7 +89,7 @@ function evaluateExpr(postfixExprArray) {
     }
     else if (isOperator(element)) {
       if (operandStack.length <= 1) {
-        console.error(`Operation : ${element} requires two operand. Second Operand is missing`);
+        console.log(`Operation ${element} is missing an operand(s)`);
         return operandStack.toString();
       }
       switch (element) {
@@ -129,5 +137,5 @@ function isOperator(char) {
 }
 
 function isValid(expr) {
-  return /(^\d+|^\d+[\*\/\+\-\(])+/.test(expr);
+  return /(^\d+|^\d+[\*\/\+\-\(]?)+/.test(expr);
 }

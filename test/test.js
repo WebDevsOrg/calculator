@@ -18,15 +18,23 @@ describe("Calculator", () => {
     });
 
     it("should return empty string when the expression is a+b+c", () => {
-      assert.equal(calculator.parseExpr("a+b+c"), "");
+      assert.equal(calculator.parseExpr("a+b+c"), "a+b+c");
     });
 
     it("should return empty string when the expression is 33++4", () => {
-      assert.equal(calculator.parseExpr("33++4"), "");
+      assert.equal(calculator.parseExpr("33++4"), "37");
     });
 
     it("should return 30 when the expression is 1 0 + 10 + 5+5", () => {
-      assert.equal(calculator.parseExpr("1 0 + 10 + 5+5"), 30);
+      assert.equal(calculator.parseExpr("  1 0 + 10 + 5+  5  "), 30);
+    });
+
+    it("should return 1 when the expression is 1+", () => {
+      assert.equal(calculator.parseExpr("1+"), 1);
+    });
+
+    it("should return error when the expression is +", () => {
+      assert.equal(calculator.parseExpr("+"), "+");
     });
   });
 
