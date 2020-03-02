@@ -12,6 +12,7 @@
 exports.parseExpr = (expr) => {
   if (expr === "") {
     console.error("Expression cannot be empty");
+    console.error("Test mocha test");
     return expr;
   }
 
