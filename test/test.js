@@ -73,18 +73,6 @@ describe("Calculator", () => {
       assert.equal(calculator.parseExpr("1 * 1"), 1);
     });
 
-    it("should return 4.4 when the expression is 2.2 * 2", () => {
-      assert.equal(calculator.parseExpr("2.2*2"), 4.4);
-    });
-
-    it("should return .25 when the expression is .5 * .5", () => {
-      assert.equal(calculator.parseExpr(".5*.5"), .25);
-    });
-
-    it("should return 1 when the expression is .5 * 2", () => {
-      assert.equal(calculator.parseExpr(".5*2"), 1);
-    });
-
     it("should return 25 when the expression is 5 * 5", () => {
       assert.equal(calculator.parseExpr("5*5"), 25);
     });
@@ -131,5 +119,6 @@ describe("Calculator", () => {
     it("should return 980 when the expression is 10 * 10 * 10 - 20", () => {
       assert.equal(calculator.parseExpr("10 * 10 * 10 - 20"), 980);
     });
-  });
+});
+
 });
