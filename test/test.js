@@ -54,6 +54,10 @@ describe("Calculator", () => {
     it("should return 1 when the expression is 1", () => {
       assert.equal(calculator.parseExpr("1"), 1);
     });
+
+    it("should return 0 when the expression is 0", () => {
+      assert.equal(calculator.parseExpr("0"), 0);
+    });
   });
 
   describe("TestMultiplyExpression()", () => {
