@@ -4,7 +4,7 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-console */
 /* eslint-disable no-use-before-define */
-
+const { tokenize } = require("./tokenizer");
 /**
  * Parses an infix algebraic expression and returns it's value
  * @param expr : expression to be evaluated i.e. 3+4*5-2
@@ -24,37 +24,34 @@ exports.parseExpr = (expr) => {
     console.log(`Invalid expression ${newExpr}. Please provide valid expression.`);
     return expr;
   }
-  const postfixExprArray = convertToPostFix(newExpr);
+
+  const postfixExprArray = convertToPostFix(tokenize(newExpr));
   const result = evaluateExpr(postfixExprArray);
   console.log(`Expression \"${newExpr}\" evaluates to \"${postfixExprArray}\"`);
   console.log(`PostFix Expression \"${postfixExprArray}\" evaluates to ${result}`);
   return result;
 };
 
-function convertToPostFix(expr) {
+function convertToPostFix(tokens) {
   const opPrecedence = {
     "*": 3, "/": 3, "+": 2, "-": 2, "(": 1,
   };
 
   const opStack = [];
   const outQueue = [];
-  let tokenizer = [];
 
-  for (const char of expr) {
-    if (isOperand(char)) {
-      tokenizer.push(char);
+  for (const token of tokens) {
+    if (isOperand(token)) {
+      outQueue.push(token);
     }
-    else if (isOperator(char)) {
-      if (tokenizer.length > 0) {
-        outQueue.push(tokenizer.reduce((accum, curValue) => accum + curValue));
-        tokenizer = [];
-      }
+    else if (isOperator(token)) {
       while (opStack.length !== 0
-        && opPrecedence[opStack[opStack.length - 1]] >= opPrecedence[char]) {
+        && opPrecedence[opStack[opStack.length - 1]] >= opPrecedence[token]) {
         outQueue.push(opStack.pop());
       }
-      opStack.push(char);
+      opStack.push(token);
     }
+
     /*
     else if (char.match(/\(/)) {
       opStack.push(char);
@@ -67,14 +64,10 @@ function convertToPostFix(expr) {
     */
   }
 
-  if (tokenizer.length > 0) {
-    outQueue.push(tokenizer.reduce((accum, curValue) => accum + curValue));
-    tokenizer = [];
-  }
-
   while (opStack.length !== 0) {
     outQueue.push(opStack.pop());
   }
+
   return outQueue;
 }
 
@@ -138,5 +131,5 @@ function isOperator(char) {
 }
 
 function isValid(expr) {
-  return /(^\d+|^\d+[\*\/\+\-\(]?)+/.test(expr);
+  return /(^[\d\.]+|^\d+[\*\/\+\-\(\.]?)+/.test(expr);
 }

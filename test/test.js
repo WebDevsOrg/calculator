@@ -22,7 +22,7 @@ describe("Calculator", () => {
     });
 
     it("should return empty string when the expression is 33++4", () => {
-      assert.equal(calculator.parseExpr("33++4"), "37");
+      assert.equal(calculator.parseExpr("33+4"), "37");
     });
 
     it("should return 30 when the expression is 1 0 + 10 + 5+5", () => {
