@@ -12,24 +12,32 @@
  * @returns string value of an expression 3+4*5 => 23
  */
 exports.parseExpr = (expr) => {
-  // minus in the begining of expression fails i.e. -2 + 3 gives 5 instead of 1
-  if (!isValid(expr)) {
+  if (!expr) {
     console.error(
-      "Invalid expression. Please provide valid expression i.e 3 + 2",
+      "Invalid expression. Please provide valid expression i.e 3 + 2. Supported operators are +, -, /, *",
     );
     return expr;
   }
-  const postfixExprArray = convertToRpn(expr);
-  const result = evaluateExpr(postfixExprArray);
+
+  const infixExprArray = convertToTokens(expr);
+  const postfixExprArray = convertToRpn(infixExprArray);
+  const result = evaluateExpr(expr, postfixExprArray);
   console.log(`RPN expression : ${postfixExprArray} evaluates to ${result}`);
   return result;
 };
 
+
 /**
- * @param {string} expr valid infix expression to be evaluated i.e. 3+4*5
- * @returns postfix version of a valid infix expression 345*+
+ * 
+ * @param {[]} infixExprArray valid infix expression array to be evaluated i.e. 3, +, 4, *, 5
+ * @returns postfix array of a valid infix expression 3,4,5,*,+
  */
-function convertToRpn(expr) {
+function convertToRpn(infixExprArray) {
+  if (!infixExprArray) {
+    console.log("Empty expression");
+    return [];
+  }
+
   // highest to lowest
   const opPrecedence = {
     "*": 3,
@@ -45,50 +53,41 @@ function convertToRpn(expr) {
   // stack postfix expression
   const postFixQueue = [];
 
-  // tokenize numeric characters
-  let tokenizer = [];
+  const len = infixExprArray.length;
+  for (let i = 0; i < len; ++i) {
+    const token = infixExprArray[i];
 
-  // character array like '1', '0', '0', '0', '0' shall be reduced to single string 10000
-  const reduceTo = (strTokens) => strTokens.reduce((accum, curValue) => accum + curValue);
-
-  for (const c of expr) {
-    if (isOperand(c)) {
-      tokenizer.push(c);
-    } else if (isOperator(c)) {
-      if (tokenizer.length > 0) {
-        postFixQueue.push(reduceTo(tokenizer));
-        tokenizer = [];
-      }
-      // if c's precedence is less than or euqla to an operator in opStack then pop
+    if (isOperand(token)) {
+      postFixQueue.push(token);
+    } else if (isOperator(token)) {
+      // if token's precedence is less than or euqal to an operator in opStack then pop
       while (
         opStack.length !== 0
-        && opPrecedence[c] <= opPrecedence[opStack[opStack.length - 1]]
+        && opPrecedence[token] <= opPrecedence[opStack[opStack.length - 1]]
       ) {
         postFixQueue.push(opStack.pop());
       }
-      opStack.push(c);
+      opStack.push(token);
     } else {
-      console.error(`${c} not supported`);
+      console.error(`${token} not supported`);
+      break;
     }
-  }
-
-  if (tokenizer.length > 0) {
-    postFixQueue.push(reduceTo(tokenizer));
-    tokenizer = [];
   }
 
   while (opStack.length !== 0) {
     postFixQueue.push(opStack.pop());
   }
+
   return postFixQueue;
 }
 
 /**
- * evaluate post fix expressions to a valid value i.e. 345*+ => 3+4*5 => 23
- * @param {*} postFixArr array containing operand and operands in postfix form 3, 4, 5, *, +
+ * evaluate post fix expressions to a valid value i.e. 345*+ => 23
+ * @param {string} infixExpr valid infix expression i.e. 3+4*5
+ * @param {[]} postFixArr array containing operand and operands in postfix form 3, 4, 5, *, +
  * @returns evaluated postfix expression value 345*+ => 23
  */
-function evaluateExpr(postFixArr) {
+function evaluateExpr(infixExpr, postFixArr) {
   const len = postFixArr.length;
   if (len === 0) {
     console.error("Nothing to evaluate");
@@ -104,9 +103,9 @@ function evaluateExpr(postFixArr) {
     } else if (isOperator(element)) {
       if (operandStack.length <= 1) {
         console.error(
-          `Operation : ${element} requires two operand. Second Operand is missing`,
+          `Expression ${infixExpr} cannot be evaluated. Operation: ${element} requires two operand. Second Operand is missing`,
         );
-        return 0;
+        return operandStack.pop();
       }
 
       switch (element) {
@@ -159,7 +158,7 @@ function evaluateExpr(postFixArr) {
  * @returns true if str is numeric value
  */
 function isOperand(str) {
-  return /[0-9]+/.test(str);
+  return /(\d*\.?\d+){1}/.test(str);
 }
 
 /**
@@ -168,15 +167,38 @@ function isOperand(str) {
  * @returns true of str is supported operators
  */
 function isOperator(str) {
-  return /[\*\/\+\-\(]/.test(str);
+  return /[\*\/\+\-]/.test(str);
 }
 
-/**
- * checks if expression is valid, can have numbers and binary operators
- * @param {string} expr simple expressions like 3+4*5
- * @returns returns true if expr is either number, operator or
- * combination of both
- */
-function isValid(expr) {
-  return /([0-9][\*\/\+\-\(])+/.test(expr);
+function convertToTokens(expr) {
+  // character array like '1', '0', '0', '0', '0' shall be reduced to single string 10000
+  const toNumber = (numTokens) => numTokens.reduce((accum, curValue) => accum + curValue);
+  const tokenizer = [];
+  let numArray = [];
+  const len = expr.length;
+  for (let i = 0; i < len; ++i) {
+    const c = expr[i];
+
+    // ignore white space
+    if (c === " ") continue;
+
+    if (isOperand(c) || c === ".") {
+      numArray.push(c);
+    } else if (isOperator(c)) {
+      if (numArray.length > 0) {
+        tokenizer.push(toNumber(numArray));
+        numArray = [];
+      }
+      tokenizer.push(c);
+    }
+    else {
+      console.error(`operation not supported: ${c}`);
+      break;
+    }
+  }
+
+  if (numArray.length > 0) {
+    tokenizer.push(toNumber(numArray));
+  }
+  return tokenizer;
 }
