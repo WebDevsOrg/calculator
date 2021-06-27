@@ -37,6 +37,14 @@ describe("Calculator", () => {
     it("should return 2^3 when the expression is 2^3", () => {
       assert.strictEqual(claculator.parseExpr("2^3"), "2^3");
     });
+
+    it("should return 2 when the expression is 2 + 3 * 3 * 3 - 3", () => {
+      assert.strictEqual(claculator.parseExpr("2 + 3 * 3 / 3 - 3"), 2);
+    });
+
+    it("should return 11 when the expression is 2 + 3 * 3 / (4 - 3)", () => {
+      assert.strictEqual(claculator.parseExpr("2 + 3 * 3 / (4 - 3)"), 11);
+    });
   });
 
   describe("TestSubtractExpression()", () => {
