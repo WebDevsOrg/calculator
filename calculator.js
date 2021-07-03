@@ -75,6 +75,7 @@ function convertToRpn(infixExprArray) {
           outputQueue.push(opStack.pop());
         } else {
           opStack.pop();
+          break;
         }
       }
     } else {

@@ -57,6 +57,15 @@ describe("Calculator", () => {
     it("should return 1 when the expression is (3 + 5) / (2 * 4)", () => {
       assert.strictEqual(calculator.parseExpr("(3 + 5) / (2 * 4)"), 1);
     });
+
+
+    it("should return 5 when the expression is 1 + ((3 + 5) * 4 / (2 * 4))", () => {
+      assert.strictEqual(calculator.parseExpr("1 + ((3 + 5) * 4 / (2 * 4))"), 5);
+    });
+
+    it("should return 5 when the expression is 1 + ((3 + 5) * (4 / (2 * 4)))", () => {
+      assert.strictEqual(calculator.parseExpr("1 + ((3 + 5) * 4 / (2 * 4))"), 5);
+    });
   });
 
   describe("TestSubtractExpression()", () => {
