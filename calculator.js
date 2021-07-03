@@ -28,7 +28,6 @@ exports.parseExpr = (expr) => {
 
 
 /**
- * 
  * @param {[]} infixExprArray valid infix expression array to be evaluated i.e. 3, +, 4, *, 5
  * @returns postfix array of a valid infix expression 3,4,5,*,+
  */
@@ -44,30 +43,40 @@ function convertToRpn(infixExprArray) {
     "/": 3,
     "+": 2,
     "-": 2,
-    "(": 1,
   };
 
   // operator stack
   const opStack = [];
 
   // stack postfix expression
-  const postFixQueue = [];
+  const outputQueue = [];
 
   const len = infixExprArray.length;
   for (let i = 0; i < len; ++i) {
     const token = infixExprArray[i];
 
-    if (isOperand(token)) {
-      postFixQueue.push(token);
+    if (isNumber(token)) {
+      outputQueue.push(token);
     } else if (isOperator(token)) {
-      // if token's precedence is less than or euqal to an operator in opStack then pop
+      // if token's precedence is less than or equal to an operator in opStack then pop
       while (
         opStack.length !== 0
         && opPrecedence[token] <= opPrecedence[opStack[opStack.length - 1]]
-      ) {
-        postFixQueue.push(opStack.pop());
+        && opPrecedence[opStack[opStack.length - 1]] !== "(") {
+        outputQueue.push(opStack.pop());
       }
       opStack.push(token);
+    } else if (token === "(") {
+      opStack.push("(");
+    } else if (token === ")") {
+      while (
+        opStack.length !== 0) {
+        if (opStack[opStack.length - 1] !== "(") {
+          outputQueue.push(opStack.pop());
+        } else {
+          opStack.pop();
+        }
+      }
     } else {
       console.error(`${token} not supported`);
       break;
@@ -75,10 +84,10 @@ function convertToRpn(infixExprArray) {
   }
 
   while (opStack.length !== 0) {
-    postFixQueue.push(opStack.pop());
+    outputQueue.push(opStack.pop());
   }
 
-  return postFixQueue;
+  return outputQueue;
 }
 
 /**
@@ -98,7 +107,7 @@ function evaluateExpr(infixExpr, postFixArr) {
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i < len; ++i) {
     const element = postFixArr[i];
-    if (isOperand(element)) {
+    if (isNumber(element)) {
       operandStack.push(Number(element));
     } else if (isOperator(element)) {
       if (operandStack.length <= 1) {
@@ -152,24 +161,6 @@ function evaluateExpr(infixExpr, postFixArr) {
   return 0;
 }
 
-/**
- * checks if param is valid operand, in this case number
- * @param {string} str numeric value
- * @returns true if str is numeric value
- */
-function isOperand(str) {
-  return /(\d*\.?\d+){1}/.test(str);
-}
-
-/**
- * checks is param is valid operator i.e. +, -, *, /
- * @param {string} str binary operators
- * @returns true of str is supported operators
- */
-function isOperator(str) {
-  return /[\*\/\+\-]/.test(str);
-}
-
 function convertToTokens(expr) {
   // character array like '1', '0', '0', '0', '0' shall be reduced to single string 10000
   const toNumber = (numTokens) => numTokens.reduce((accum, curValue) => accum + curValue);
@@ -182,9 +173,9 @@ function convertToTokens(expr) {
     // ignore white space
     if (c === " ") continue;
 
-    if (isOperand(c) || c === ".") {
+    if (isNumber(c) || c === ".") {
       numArray.push(c);
-    } else if (isOperator(c)) {
+    } else if (isOperator(c) || isParen(c)) {
       if (numArray.length > 0) {
         tokenizer.push(toNumber(numArray));
         numArray = [];
@@ -201,4 +192,31 @@ function convertToTokens(expr) {
     tokenizer.push(toNumber(numArray));
   }
   return tokenizer;
+}
+
+/**
+ * checks if param is valid operand, in this case number
+ * @param {string} str numeric value
+ * @returns true if str is numeric value
+ */
+function isNumber(str) {
+  return /(\d*\.?\d+){1}/.test(str);
+}
+
+/**
+ * checks is param is valid operator i.e. +, -, *, /
+ * @param {string} str binary operators
+ * @returns true of str is supported operators
+ */
+function isOperator(str) {
+  return /[\*\/\+\-]/.test(str);
+}
+
+/**
+ * checks is param is valid operator i.e. +, -, *, /
+ * @param {string} str binary operators
+ * @returns true of str is supported operators
+ */
+function isParen(str) {
+  return /[\(\)]/.test(str);
 }
