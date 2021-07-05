@@ -6,136 +6,218 @@
 /* eslint-disable no-use-before-define */
 
 /**
- * Parses an infix algebraic expression and returns it's value
- * @param expr : expression to be evaluated i.e. 3+4*5-2
+ * Parses an infix algebraic expression, convert it to postfix expressions
+ * using shunting yard algorithm  https://en.wikipedia.org/wiki/Shunting-yard_algorithm
+ * @param {string} expr valid infix expression to be evaluated i.e. 3+4*5
+ * @returns string value of an expression 3+4*5 => 23
  */
 exports.parseExpr = (expr) => {
-  if (expr === "") {
-    console.error("Expression cannot be empty");
+  if (!expr) {
+    console.error(
+      "Invalid expression. Please provide valid expression i.e 3 + 2. Supported operators are +, -, /, *",
+    );
     return expr;
   }
 
-  // remove white spaces
-  const newExpr = expr.replace(/(\s)+/g, "");
-
-  // minus in the begining of expression fails i.e. -2 + 3 gives 5 instead of 1
-  if (!isValid(newExpr)) {
-    console.log(`Invalid expression ${newExpr}. Please provide valid expression.`);
-    return expr;
-  }
-  const postfixExprArray = convertToPostFix(newExpr);
-  const result = evaluateExpr(postfixExprArray);
-  console.log(`Expression \"${newExpr}\" evaluates to \"${postfixExprArray}\"`);
-  console.log(`PostFix Expression \"${postfixExprArray}\" evaluates to ${result}`);
+  const infixExprArray = convertToTokens(expr);
+  const postfixExprArray = convertToRpn(infixExprArray);
+  const result = evaluateExpr(expr, postfixExprArray);
+  console.log(`RPN expression : ${postfixExprArray} evaluates to ${result}`);
   return result;
 };
 
-function convertToPostFix(expr) {
-  const opPrecedence = {
-    "*": 3, "/": 3, "+": 2, "-": 2, "(": 1,
-  };
 
-  const opStack = [];
-  const outQueue = [];
-  let tokenizer = [];
-
-  for (const char of expr) {
-    if (isOperand(char)) {
-      tokenizer.push(char);
-    }
-    else if (isOperator(char)) {
-      if (tokenizer.length > 0) {
-        outQueue.push(tokenizer.reduce((accum, curValue) => accum + curValue));
-        tokenizer = [];
-      }
-      while (opStack.length !== 0
-        && opPrecedence[opStack[opStack.length - 1]] >= opPrecedence[char]) {
-        outQueue.push(opStack.pop());
-      }
-      opStack.push(char);
-    }
-    /*
-    else if (char.match(/\(/)) {
-      opStack.push(char);
-    }
-    else if (char.match(/\)/)) {
-      char top = opStack.pop();
-      while()
-      opStack.push(char);
-    }
-    */
+/**
+ * @param {[]} infixExprArray valid infix expression array to be evaluated i.e. 3, +, 4, *, 5
+ * @returns postfix array of a valid infix expression 3,4,5,*,+
+ */
+function convertToRpn(infixExprArray) {
+  if (!infixExprArray) {
+    console.log("Empty expression");
+    return [];
   }
 
-  if (tokenizer.length > 0) {
-    outQueue.push(tokenizer.reduce((accum, curValue) => accum + curValue));
-    tokenizer = [];
+  // highest to lowest
+  const opPrecedence = {
+    "*": 3,
+    "/": 3,
+    "+": 2,
+    "-": 2,
+  };
+
+  // operator stack
+  const opStack = [];
+
+  // stack postfix expression
+  const outputQueue = [];
+
+  const len = infixExprArray.length;
+  for (let i = 0; i < len; ++i) {
+    const token = infixExprArray[i];
+
+    if (isNumber(token)) {
+      outputQueue.push(token);
+    } else if (isOperator(token)) {
+      // if token's precedence is less than or equal to an operator in opStack then pop
+      while (
+        opStack.length !== 0
+        && opPrecedence[token] <= opPrecedence[opStack[opStack.length - 1]]
+        && opPrecedence[opStack[opStack.length - 1]] !== "(") {
+        outputQueue.push(opStack.pop());
+      }
+      opStack.push(token);
+    } else if (token === "(") {
+      opStack.push("(");
+    } else if (token === ")") {
+      while (
+        opStack.length !== 0) {
+        if (opStack[opStack.length - 1] !== "(") {
+          outputQueue.push(opStack.pop());
+        } else {
+          opStack.pop();
+          break;
+        }
+      }
+    } else {
+      console.error(`${token} not supported`);
+      break;
+    }
   }
 
   while (opStack.length !== 0) {
-    outQueue.push(opStack.pop());
+    outputQueue.push(opStack.pop());
   }
-  return outQueue;
+
+  return outputQueue;
 }
 
 /**
- * evaluate post fix expressions to value
- * @param postfixExprArray
+ * evaluate post fix expressions to a valid value i.e. 345*+ => 23
+ * @param {string} infixExpr valid infix expression i.e. 3+4*5
+ * @param {[]} postFixArr array containing operand and operands in postfix form 3, 4, 5, *, +
+ * @returns evaluated postfix expression value 345*+ => 23
  */
-function evaluateExpr(postfixExprArray) {
+function evaluateExpr(infixExpr, postFixArr) {
+  const len = postFixArr.length;
+  if (len === 0) {
+    console.error("Nothing to evaluate");
+    return 0;
+  }
+
   const operandStack = [];
-  postfixExprArray.forEach((element) => {
-    if (isOperand(element)) {
-      operandStack.push(element);
-    }
-    else if (isOperator(element)) {
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < len; ++i) {
+    const element = postFixArr[i];
+    if (isNumber(element)) {
+      operandStack.push(Number(element));
+    } else if (isOperator(element)) {
       if (operandStack.length <= 1) {
-        console.log(`Operation ${element} is missing an operand(s)`);
-        return operandStack.toString();
+        console.error(
+          `Expression ${infixExpr} cannot be evaluated. Operation: ${element} requires two operand. Second Operand is missing`,
+        );
+        return operandStack.pop();
       }
+
       switch (element) {
         case "*": {
           const second = operandStack.pop();
           const first = operandStack.pop();
-          operandStack.push(Number(first) * Number(second));
+          operandStack.push(first * second);
           break;
         }
-        case "/":
-        {
+        case "/": {
           const second = operandStack.pop();
           const first = operandStack.pop();
-          operandStack.push(Number(first) / Number(second));
+          // check for divide by zero error
+          if (second === 0) {
+            console.error(
+              `Operation : ${first} / ${second} divide by zero error`,
+            );
+            return 0;
+          }
+          operandStack.push(first / second);
           break;
         }
-        case "+":
-        {
+        case "+": {
           const second = operandStack.pop();
           const first = operandStack.pop();
-          operandStack.push(Number(first) + Number(second));
+          operandStack.push(first + second);
           break;
         }
-        case "-":
-        {
+        case "-": {
           const second = operandStack.pop();
           const first = operandStack.pop();
-          operandStack.push(Number(first) - Number(second));
+          operandStack.push(first - second);
           break;
         }
         default:
           console.error(`operation not supported: ${element}`);
+          break;
       }
     }
-  });
-  return operandStack.toString();
+  }
+  if (operandStack.length > 0) {
+    return operandStack.pop();
+  }
+  return 0;
 }
 
-function isOperand(char) {
-  return /\d+/.test(char);
+function convertToTokens(expr) {
+  // character array like '1', '0', '0', '0', '0' shall be reduced to single string 10000
+  const toNumber = (numTokens) => numTokens.reduce((accum, curValue) => accum + curValue);
+  const tokenizer = [];
+  let numArray = [];
+  const len = expr.length;
+  for (let i = 0; i < len; ++i) {
+    const c = expr[i];
+
+    // ignore white space
+    if (c === " ") continue;
+
+    if (isNumber(c) || c === ".") {
+      numArray.push(c);
+    } else if (isOperator(c) || isParen(c)) {
+      if (numArray.length > 0) {
+        tokenizer.push(toNumber(numArray));
+        numArray = [];
+      }
+      tokenizer.push(c);
+    }
+    else {
+      console.error(`operation not supported: ${c}`);
+      break;
+    }
+  }
+
+  if (numArray.length > 0) {
+    tokenizer.push(toNumber(numArray));
+  }
+  return tokenizer;
 }
 
-function isOperator(char) {
-  return /[\*\/\+\-\(]?/.test(char);
+/**
+ * checks if param is valid operand, in this case number
+ * @param {string} str numeric value
+ * @returns true if str is numeric value
+ */
+function isNumber(str) {
+  return /(\d*\.?\d+){1}/.test(str);
 }
 
-function isValid(expr) {
-  return /(^\d+|^\d+[\*\/\+\-\(]?)+/.test(expr);
+/**
+ * checks is param is valid operator i.e. +, -, *, /
+ * @param {string} str binary operators
+ * @returns true of str is supported operators
+ */
+function isOperator(str) {
+  return /[\*\/\+\-]/.test(str);
+}
+
+/**
+ * checks is param is valid operator i.e. +, -, *, /
+ * @param {string} str binary operators
+ * @returns true of str is supported operators
+ */
+function isParen(str) {
+  return /[\(\)]/.test(str);
 }
