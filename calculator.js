@@ -162,6 +162,11 @@ function evaluateExpr(infixExpr, postFixArr) {
   return 0;
 }
 
+/**
+ * converts an expression to an array of string tokens
+ * @param {string} expr a prefix expression 2+3*4+(8+2)
+ * @returns an array consisting of numbers and supported operators +,/,-,+..
+ */
 function convertToTokens(expr) {
   // character array like '1', '0', '0', '0', '0' shall be reduced to single string 10000
   const toNumber = (numTokens) => numTokens.reduce((accum, curValue) => accum + curValue);
@@ -196,7 +201,7 @@ function convertToTokens(expr) {
 }
 
 /**
- * checks if param is valid operand, in this case number
+ * checks if param is valid number
  * @param {string} str numeric value
  * @returns true if str is numeric value
  */
@@ -205,7 +210,7 @@ function isNumber(str) {
 }
 
 /**
- * checks is param is valid operator i.e. +, -, *, /
+ * checks if param is valid operator i.e. +, -, *, /
  * @param {string} str binary operators
  * @returns true of str is supported operators
  */
@@ -214,7 +219,7 @@ function isOperator(str) {
 }
 
 /**
- * checks is param is valid operator i.e. +, -, *, /
+ * checks if param is valid parenthesis i.e. (,)
  * @param {string} str binary operators
  * @returns true of str is supported operators
  */
