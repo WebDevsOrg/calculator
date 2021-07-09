@@ -64,8 +64,7 @@ describe("Calculator", () => {
     });
 
     it("should return 5 when the expression is 1 + ((3 + 5) * (4 / (2 * 4)))", () => {
-      assert.strictEqual(calculator.parseExpr("1 + ((3 + 5) * 4 / (2 * 4))"), 5);
-      assert.strictEqual(calculator.parseExpr("5+5"), 10);
+      assert.strictEqual(calculator.parseExpr("1 + ((3 + 5) * (4 / (2 * 4)))"), 5);
     });
 
     it("should return 2000000 when the expression is 1000000 + 1000000", () => {
@@ -86,6 +85,10 @@ describe("Calculator", () => {
 
     // it("should return error when the expression is +", () => {
     //   assert.strictEqual(calculator.parseExpr("+"), "+");
+    // });
+
+    // it("should return 5 when the expression is 1 + ((3 + 5) * (4 / (2 * 4))", () => {
+    //   assert.strictEqual(calculator.parseExpr("1 + (3 + 5) * (4 / (2 * 4"), 0);
     // });
   });
 
@@ -127,19 +130,6 @@ describe("Calculator", () => {
     it("should return 0.33333 when expression is 1/3", () => {
       // toFixed() returns a string
       assert.strictEqual(calculator.parseExpr("1/3").toFixed(5), "0.33333");
-      assert.strictEqual(calculator.parseExpr("5-5"), 0);
-    });
-
-    it("should return 0 when the expression is 0 - 0", () => {
-      assert.strictEqual(calculator.parseExpr("0-0"), 0);
-    });
-
-    it("should return 1 when the expression is 1 - 0", () => {
-      assert.strictEqual(calculator.parseExpr("1-0"), 1);
-    });
-
-    it("should return 1 when the expression is 1", () => {
-      assert.strictEqual(calculator.parseExpr("1"), 1);
     });
   });
 });
