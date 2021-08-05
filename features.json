@@ -1,0 +1,23 @@
+{
+    "Standard": {
+        "Features": {
+            "Ready": {
+                "Add": {"Symbol": "+", "Description": "Add two numbers"},
+                "Subtract": {"Symbol": "-", "Description": "Subtract two numbers"},
+                "Multiply": {"Symbol": "×", "Description": "Multiple two numbers"},
+                "Divide": {"Symbol": "/", "Description": "Divide two numbers"}
+            },
+            "InProgress": {
+                "Left Parenthesis": {"Symbol": "(", "Description": "Start of nested expression"},
+                "Right Parenthesis": {"Symbol": ")", "Description": "End of nested expression"}
+            },
+            "NotSupported": {
+                "SquareRoot": {"Symbol": "؇", "Description": "Square root of a number"}
+            }
+        }
+    },
+    "Programmers": {
+        "Features": {
+        }
+    }
+}
