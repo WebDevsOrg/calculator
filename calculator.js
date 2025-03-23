@@ -5,224 +5,205 @@
 /* eslint-disable no-console */
 /* eslint-disable no-use-before-define */
 
-/**
- * Parses an infix algebraic expression, convert it to postfix expressions
- * using shunting yard algorithm  https://en.wikipedia.org/wiki/Shunting-yard_algorithm
- * @param {string} expr valid infix expression to be evaluated i.e. 3+4*5
- * @returns string value of an expression 3+4*5 => 23
- */
-exports.parseExpr = (expr) => {
-  if (!expr) {
-    console.error(
-      "Invalid expression. Please provide valid expression i.e 3 + 2. Supported operators are +, -, /, *",
-    );
-    return expr;
-  }
-
-  const infixExprArray = convertToTokens(expr);
-  const postfixExprArray = convertToRpn(infixExprArray);
-  const result = evaluateExpr(expr, postfixExprArray);
-  console.log(`RPN expression : ${postfixExprArray} evaluates to ${result}`);
-  return result;
+const OPERATOR_PRECEDENCE = {
+  "*": 3,
+  "/": 3,
+  "+": 2,
+  "-": 2,
 };
 
+const SUPPORTED_OPERATORS = /[\*\/\+\-]/;
+const SUPPORTED_PARENS = /[\(\)]/;
+
+const ERRORS = {
+  INVALID_POSTFIX: "Postfix array is empty or invalid.",
+  INVALID_OPERATOR: (expr, token) => `Invalid expression: ${expr}. Operator '${token}' requires two operands.`,
+  UNSUPPORTED_TOKEN: (token) => `Unsupported token encountered: '${token}'`,
+  INVALID_EXPRESSION: (postFixArr) => `Invalid postfix expression: ${postFixArr.join(" ")}`,
+};
 
 /**
- * @param {[]} infixExprArray valid infix expression array to be evaluated i.e. 3, +, 4, *, 5
- * @returns postfix array of a valid infix expression 3,4,5,*,+
+ * Parses an infix algebraic expression, converts it to postfix notation,
+ * and evaluates the result.
+ * @param {string} expr - A valid infix expression to be evaluated (e.g., "3+4*5").
+ * @returns {number} - The evaluated result of the expression.
+ * @throws {Error} - Throws an error if the input is invalid or unsupported.
  */
-function convertToRpn(infixExprArray) {
-  if (!infixExprArray) {
-    console.log("Empty expression");
-    return [];
+exports.parseExpr = (expr) => {
+  if (typeof expr !== "string" || expr.trim() === "") {
+    throw new Error("Invalid expression: Expression must be a non-empty string.");
   }
 
-  // highest to lowest
-  const opPrecedence = {
-    "*": 3,
-    "/": 3,
-    "+": 2,
-    "-": 2,
-  };
+  const infixTokens = tokenizeExpression(expr); // Tokenize the input expression into an array of tokens.
+  const postfixTokens = convertToPostfix(infixTokens); // Convert the infix tokens to postfix notation.
+  return evaluatePostfixExpression(expr, postfixTokens); // Evaluate the postfix expression and return the result.
+};
 
-  // operator stack
-  const opStack = [];
+/**
+ * Converts an infix expression array to a postfix expression array using the Shunting Yard algorithm.
+ * @param {string[]} infixTokens - Array of tokens in infix notation.
+ * @returns {string[]} - Array of tokens in postfix notation.
+ * @throws {Error} - Throws an error if the input is invalid or contains unsupported tokens.
+ */
+function convertToPostfix(infixTokens) {
+  if (!Array.isArray(infixTokens) || infixTokens.length === 0) {
+    throw new Error("Input must be a non-empty array of tokens.");
+  }
 
-  // stack postfix expression
-  const outputQueue = [];
+  const operatorStack = []; // Stack to hold operators and parentheses.
+  const outputQueue = []; // Queue to hold the final postfix expression.
 
-  const len = infixExprArray.length;
-  for (let i = 0; i < len; ++i) {
-    const token = infixExprArray[i];
-
+  for (const token of infixTokens) {
     if (isNumber(token)) {
-      outputQueue.push(token);
+      outputQueue.push(token); // Push numbers directly to the output queue.
     } else if (isOperator(token)) {
-      // if token's precedence is less than or equal to an operator in opStack then pop
+      // Pop operators from the stack to the output queue based on precedence.
       while (
-        opStack.length !== 0
-        && opPrecedence[token] <= opPrecedence[opStack[opStack.length - 1]]
-        && opPrecedence[opStack[opStack.length - 1]] !== "(") {
-        outputQueue.push(opStack.pop());
+        operatorStack.length > 0 &&
+        OPERATOR_PRECEDENCE[token] <= OPERATOR_PRECEDENCE[operatorStack[operatorStack.length - 1]] &&
+        operatorStack[operatorStack.length - 1] !== "("
+      ) {
+        outputQueue.push(operatorStack.pop());
       }
-      opStack.push(token);
+      operatorStack.push(token); // Push the current operator to the stack.
     } else if (token === "(") {
-      opStack.push("(");
+      operatorStack.push(token); // Push opening parentheses to the stack.
     } else if (token === ")") {
-      while (
-        opStack.length !== 0) {
-        if (opStack[opStack.length - 1] !== "(") {
-          outputQueue.push(opStack.pop());
-        } else {
-          opStack.pop();
-          break;
-        }
+      // Pop operators from the stack to the output queue until an opening parenthesis is encountered.
+      while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== "(") {
+        outputQueue.push(operatorStack.pop());
       }
+      operatorStack.pop(); // Remove the opening parenthesis from the stack.
     } else {
-      console.error(`${token} not supported`);
-      break;
+      throw new Error(ERRORS.UNSUPPORTED_TOKEN(token)); // Throw an error for unsupported tokens.
     }
   }
 
-  while (opStack.length !== 0) {
-    outputQueue.push(opStack.pop());
+  // Pop any remaining operators from the stack to the output queue.
+  while (operatorStack.length > 0) {
+    outputQueue.push(operatorStack.pop());
   }
 
   return outputQueue;
 }
 
 /**
- * evaluate post fix expressions to a valid value i.e. 345*+ => 23
- * @param {string} infixExpr valid infix expression i.e. 3+4*5
- * @param {[]} postFixArr array containing operand and operands in postfix form 3, 4, 5, *, +
- * @returns evaluated postfix expression value 345*+ => 23
+ * Evaluates a postfix expression to a valid numerical result.
+ * @param {string} infixExpr - The original infix expression (used for error context).
+ * @param {string[]} postfixTokens - Array of tokens in postfix notation.
+ * @returns {number} - The evaluated result of the postfix expression.
+ * @throws {Error} - Throws an error if the postfix expression is invalid.
  */
-function evaluateExpr(infixExpr, postFixArr) {
-  const len = postFixArr.length;
-  if (len === 0) {
-    console.error("Nothing to evaluate");
-    return 0;
+function evaluatePostfixExpression(infixExpr, postfixTokens) {
+  if (!Array.isArray(postfixTokens) || postfixTokens.length === 0) {
+    throw new Error(ERRORS.INVALID_POSTFIX);
   }
 
-  const operandStack = [];
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < len; ++i) {
-    const element = postFixArr[i];
-    if (isNumber(element)) {
-      operandStack.push(Number(element));
-    } else if (isOperator(element)) {
-      if (operandStack.length <= 1) {
-        console.error(
-          `Expression ${infixExpr} cannot be evaluated. Operation: ${element} requires two operand. Second Operand is missing`,
-        );
-        return operandStack.pop();
-      }
+  const operandStack = []; // Stack to hold operands during evaluation.
 
-      switch (element) {
-        case "*": {
-          const second = operandStack.pop();
-          const first = operandStack.pop();
-          operandStack.push(first * second);
-          break;
-        }
-        case "/": {
-          const second = operandStack.pop();
-          const first = operandStack.pop();
-          // check for divide by zero error
-          if (second === 0) {
-            console.error(
-              `Operation : ${first} / ${second} divide by zero error`,
-            );
-            return 0;
-          }
-          operandStack.push(first / second);
-          break;
-        }
-        case "+": {
-          const second = operandStack.pop();
-          const first = operandStack.pop();
-          operandStack.push(first + second);
-          break;
-        }
-        case "-": {
-          const second = operandStack.pop();
-          const first = operandStack.pop();
-          operandStack.push(first - second);
-          break;
-        }
-        default:
-          console.error(`operation not supported: ${element}`);
-          break;
+  for (const token of postfixTokens) {
+    if (isNumber(token)) {
+      operandStack.push(Number(token)); // Push numbers to the operand stack.
+    } else if (isOperator(token)) {
+      // Ensure there are at least two operands for the operator.
+      if (operandStack.length < 2) {
+        throw new Error(ERRORS.INVALID_OPERATOR(infixExpr, token));
       }
+      const second = operandStack.pop(); // Pop the second operand.
+      const first = operandStack.pop(); // Pop the first operand.
+      operandStack.push(performOperation(token, first, second)); // Perform the operation and push the result.
+    } else {
+      throw new Error(ERRORS.UNSUPPORTED_TOKEN(token)); // Throw an error for unsupported tokens.
     }
   }
-  if (operandStack.length > 0) {
-    return operandStack.pop();
+
+  // Ensure there is exactly one result left in the stack.
+  if (operandStack.length !== 1) {
+    throw new Error(ERRORS.INVALID_EXPRESSION(postfixTokens));
   }
-  return 0;
+
+  return operandStack.pop(); // Return the final result.
 }
 
 /**
- * converts an expression to an array of string tokens
- * @param {string} expr a prefix expression 2+3*4+(8+2)
- * @returns an array consisting of numbers and supported operators +,/,-,+..
+ * Performs a mathematical operation on two operands.
+ * @param {string} operator - The operator to apply (e.g., "+", "-", "*", "/").
+ * @param {number} first - The first operand.
+ * @param {number} second - The second operand.
+ * @returns {number} - The result of the operation.
+ * @throws {Error} - Throws an error if the operator is unsupported.
  */
-function convertToTokens(expr) {
-  // character array like '1', '0', '0', '0', '0' shall be reduced to single string 10000
-  const toNumber = (numTokens) => numTokens.reduce((accum, curValue) => accum + curValue);
-  const tokenizer = [];
-  let numArray = [];
-  const len = expr.length;
-  for (let i = 0; i < len; ++i) {
-    const c = expr[i];
+function performOperation(operator, first, second) {
+  const OPERATIONS = {
+    "*": (a, b) => a * b,
+    "/": (a, b) => (b === 0 ? NaN : a / b), // Handle division by zero.
+    "+": (a, b) => a + b,
+    "-": (a, b) => a - b,
+  };
 
-    // ignore white space
-    if (c === " ") continue;
-
-    if (isNumber(c) || c === ".") {
-      numArray.push(c);
-    } else if (isOperator(c) || isParen(c)) {
-      if (numArray.length > 0) {
-        tokenizer.push(toNumber(numArray));
-        numArray = [];
-      }
-      tokenizer.push(c);
-    }
-    else {
-      console.error(`operation not supported: ${c}`);
-      break;
-    }
+  if (!OPERATIONS[operator]) {
+    throw new Error(`Unsupported operator: ${operator}`);
   }
 
-  if (numArray.length > 0) {
-    tokenizer.push(toNumber(numArray));
-  }
-  return tokenizer;
+  return OPERATIONS[operator](first, second);
 }
 
 /**
- * checks if param is valid number
- * @param {string} str numeric value
- * @returns true if str is numeric value
+ * Tokenizes an infix expression into an array of string tokens.
+ * @param {string} expr - A valid infix expression (e.g., "2+3*4+(8+2)").
+ * @returns {string[]} - Array of tokens (numbers, operators, parentheses).
+ * @throws {Error} - Throws an error if unsupported characters are encountered.
+ */
+function tokenizeExpression(expr) {
+  const tokens = [];
+  let currentNumber = "";
+
+  for (const char of expr) {
+    if (char === " ") continue; // Ignore spaces.
+
+    if (isNumber(char) || char === ".") {
+      currentNumber += char; // Build multi-digit numbers or decimals.
+    } else if (isOperator(char) || isParen(char)) {
+      if (currentNumber) {
+        tokens.push(currentNumber); // Push the current number to tokens.
+        currentNumber = "";
+      }
+      tokens.push(char); // Push the operator or parenthesis to tokens.
+    } else {
+      throw new Error(ERRORS.UNSUPPORTED_TOKEN(char)); // Throw an error for unsupported characters.
+    }
+  }
+
+  if (currentNumber) {
+    tokens.push(currentNumber); // Push any remaining number to tokens.
+  }
+
+  return tokens;
+}
+
+/**
+ * Checks if a string is a valid number.
+ * @param {string} str - The string to check.
+ * @returns {boolean} - True if the string is a valid number, false otherwise.
  */
 function isNumber(str) {
-  return /(\d*\.?\d+){1}/.test(str);
+  return /^(\d*\.?\d+)$/.test(str);
 }
 
 /**
- * checks if param is valid operator i.e. +, -, *, /
- * @param {string} str binary operators
- * @returns true of str is supported operators
+ * Checks if a string is a valid operator.
+ * @param {string} str - The string to check.
+ * @returns {boolean} - True if the string is a supported operator, false otherwise.
  */
 function isOperator(str) {
-  return /[\*\/\+\-]/.test(str);
+  return SUPPORTED_OPERATORS.test(str);
 }
 
 /**
- * checks if param is valid parenthesis i.e. (,)
- * @param {string} str binary operators
- * @returns true of str is supported operators
+ * Checks if a string is a valid parenthesis.
+ * @param {string} str - The string to check.
+ * @returns {boolean} - True if the string is a supported parenthesis, false otherwise.
  */
 function isParen(str) {
-  return /[\(\)]/.test(str);
+  return SUPPORTED_PARENS.test(str);
 }
