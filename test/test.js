@@ -1,4 +1,5 @@
 /* eslint-disable linebreak-style */
+/* eslint-env mocha */
 const assert = require("assert");
 const calculator = require("../calculator");
 
@@ -26,6 +27,13 @@ describe("Calculator", () => {
 
     it("should return 30 when the expression has extra spaces (e.g., ' 10 + 10 + 5 + 5 ')", () => {
       assert.strictEqual(calculator.parseExpr("  10 + 10 + 5 + 5  "), 30);
+    });
+
+    it("should return 0.3 when the expression is 0.1 + 0.2", () => {
+      assert.strictEqual(
+        Number(calculator.parseExpr("0.1+0.2").toFixed(2)),
+        0.3,
+      );
     });
   });
 
@@ -62,8 +70,15 @@ describe("Calculator", () => {
       assert.strictEqual(calculator.parseExpr("0/5"), 0);
     });
 
-    it("should return NaN when the expression is 0 / 0", () => {
-      assert.ok(Number.isNaN(calculator.parseExpr("0/0")));
+    it("should throw an error when the expression is 0 / 0", () => {
+      assert.throws(
+        () => calculator.parseExpr("0/0"),
+        /Division by zero is undefined/,
+      );
+    });
+
+    it("should return Infinity when the expression is 1 / 0", () => {
+      assert.strictEqual(calculator.parseExpr("1/0"), Infinity);
     });
 
     it("should return 0.33333 when the expression is 1 / 3", () => {
@@ -103,19 +118,66 @@ describe("Calculator", () => {
 
   describe("Invalid Expressions", () => {
     it("should throw an error for invalid characters in the expression", () => {
-      assert.throws(() => calculator.parseExpr("2^3"), /Unsupported token encountered/);
+      assert.throws(
+        () => calculator.parseExpr("2^3"),
+        /Unsupported token encountered/,
+      );
     });
 
     it("should throw an error for incomplete expressions like '3+'", () => {
       assert.throws(() => calculator.parseExpr("3+"), /Invalid expression/);
     });
 
-    it("should throw an error for invalid operators like '+*3'", () => {
-      assert.throws(() => calculator.parseExpr("+*3"), /Unsupported token encountered/);
+    it("should throw an error for consecutive operators like '+*3'", () => {
+      assert.throws(
+        () => calculator.parseExpr("+*3"),
+        /Invalid expression: Consecutive operators '\+' and '\*' are not allowed./,
+      );
     });
 
     it("should throw an error for mismatched parentheses", () => {
-      assert.throws(() => calculator.parseExpr("(3+5)*4/(2*4"), /Invalid postfix expression/);
+      assert.throws(
+        () => calculator.parseExpr("(3+5)*4/(2*4"),
+        /Mismatched parentheses in the expression/,
+      );
+    });
+
+    it("should throw an error for extra closing parentheses", () => {
+      assert.throws(
+        () => calculator.parseExpr("3+5)*4"),
+        /Mismatched parentheses in the expression/,
+      );
+    });
+
+    it("should throw an error for empty expressions", () => {
+      assert.throws(
+        () => calculator.parseExpr(""),
+        /Invalid expression: Expression must be a non-empty string/,
+      );
+    });
+
+    it("should throw an error for invalid characters in the expression", () => {
+      assert.throws(
+        () => calculator.parseExpr("3a+5"),
+        /Unsupported token encountered: 'a'/,
+      );
+    });
+  });
+
+  describe("Valid Expressions", () => {
+    it("should correctly evaluate a simple addition", () => {
+      assert.strictEqual(calculator.parseExpr("3+5"), 8);
+    });
+
+    it("should correctly evaluate a complex expression with nested parentheses", () => {
+      assert.strictEqual(
+        calculator.parseExpr("1 + ((3 + 5) * 4 / (2 * 4))"),
+        5,
+      );
+    });
+
+    it("should correctly evaluate an expression with multiple operators", () => {
+      assert.strictEqual(calculator.parseExpr("3 + 4 * 2 / (1 - 5)"), 1);
     });
   });
 });
