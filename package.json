@@ -1,13 +1,15 @@
 {
   "name": "calculator",
   "version": "1.0.0",
-  "description": "calculator is vanilla javascript based application for learning purpose. it has 2 modes Standard and Programmers mode. Ideas are taken from microsoft calculator app on windows 10. Not all the features are replecated only selected ones.",
+  "description": "calculator is vanilla javascript based application for learning purpose. it has 2 modes Standard and Programmers mode. Ideas are taken from microsoft calculator app on windows 10. Not all the features are replicated, only selected ones.",
   "main": "calculator.js",
   "directories": {
     "test": "./test"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "repository": {
     "type": "git",
@@ -20,9 +22,10 @@
   },
   "homepage": "https://github.com/WebDevsOrg/calculator#readme",
   "devDependencies": {
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.20.1",
-    "mocha": "^11.1.0"
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "mocha": "^10.2.0",
+    "prettier": "^3.0.0"
   }
 }

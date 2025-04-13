@@ -1,21 +1,23 @@
 module.exports = {
   env: {
     browser: true,
-    es6: true,
+    es2021: true, // Updated to ES2021 for modern JavaScript features
+    node: true, // Added Node.js environment support
   },
   extends: [
-    'airbnb-base',
+    "eslint:recommended", // Use ESLint's recommended rules
+    "plugin:prettier/recommended", // Integrate Prettier with ESLint
   ],
-  globals: {
-    Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly',
-  },
   parserOptions: {
-    ecmaVersion: 2018,
-    sourceType: 'module',
+    ecmaVersion: 2021, // Updated to ES2021 for modern syntax
+    sourceType: "module", // Use ES Modules
   },
+  plugins: ["prettier"], // Include Prettier as a plugin
   rules: {
-    "semi": ["error", "always"],
-    "quotes": ["error", "double"]
+    "prettier/prettier": "error", // Enforce Prettier formatting
+    semi: ["error", "always"], // Require semicolons
+    quotes: ["error", "double"], // Enforce double quotes
+    "no-unused-vars": ["warn"], // Warn about unused variables
+    "no-console": "off", // Allow console statements
   },
 };
