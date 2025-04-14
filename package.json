@@ -16,7 +16,7 @@
     "url": "git+https://github.com/WebDevsOrg/calculator.git"
   },
   "author": "Sumeet",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/WebDevsOrg/calculator/issues"
   },

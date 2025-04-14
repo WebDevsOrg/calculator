@@ -1,5 +1,7 @@
 # Calculator
 
+![npm version](https://img.shields.io/badge/version-1.0.0-blue)
+
 The `calculator` is a JavaScript-based library designed to parse, convert, and evaluate mathematical expressions. It supports basic arithmetic operations and handles complex expressions with parentheses for operator precedence. This project is created for learning purposes and is inspired by the Microsoft Calculator app on Windows 10.
 
 ---
@@ -123,6 +125,12 @@ Contributions are welcome! If you have ideas for new features or improvements, f
 2. Create a feature branch.
 3. Commit your changes.
 4. Push the branch and create a pull request.
+
+---
+
+## Changelog
+
+For a detailed list of changes in each version, see the [CHANGELOG.md](./CHANGELOG.md) file.
 
 ---
 
