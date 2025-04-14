@@ -10,8 +10,17 @@ The `calculator` is a JavaScript-based library designed to parse, convert, and e
 - **Parentheses Handling**: Supports nested parentheses for proper operator precedence.
 - **Expression Parsing**: Converts infix expressions to postfix notation using the Shunting Yard algorithm.
 - **Error Handling**: Provides detailed error messages for invalid expressions or unsupported tokens.
-- **Lightweight and Modular**: Can be easily integrated into other JavaScript projects.
 - **Division by Zero Handling**: Explicitly handles cases like `0 / 0` and `1 / 0`.
+
+---
+
+## Recent Updates
+
+1. **`.gitattributes` File**:
+   - Added to normalize line endings and handle file types consistently across different operating systems.
+
+2. **`run_git_normalization.sh` Script**:
+   - A utility script to normalize all files in the repository according to the `.gitattributes` rules.
 
 ---
 
@@ -58,6 +67,26 @@ try {
 
 ---
 
+## Normalizing Files
+
+To normalize files in the repository:
+
+1. Ensure `.gitattributes` is committed.
+2. Run the `run_git_normalization.sh` script:
+
+   ```bash
+   bash run_git_normalization.sh
+   ```
+
+---
+
+## Requirements
+
+- Node.js
+- Git (for repository management)
+
+---
+
 ## Development
 
 ### Running Tests
@@ -79,6 +108,7 @@ The project uses `eslint` and `prettier` for linting and formatting. Run the fol
   ```
 
 - Format the code:
+
   ```bash
   npm run format
   ```
@@ -89,11 +119,16 @@ The project uses `eslint` and `prettier` for linting and formatting. Run the fol
 
 Contributions are welcome! If you have ideas for new features or improvements, feel free to open an issue or submit a pull request.
 
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit your changes.
+4. Push the branch and create a pull request.
+
 ---
 
 ## License
 
-This project is licensed under the ISC License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ---
 
